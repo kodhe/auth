@@ -1,0 +1,25 @@
+{
+  "name": "kodhe/auth",
+  "description": "Session-based authentication component for the Kodhe framework, with a native Socialite (OAuth) bridge for unified password + social login",
+  "type": "library",
+  "version": "1.0.0",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.1",
+    "kodhe/socialite": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Kodhe\\Framework\\Auth\\": "src/"
+    },
+    "files": [
+      "src/helpers.php",
+      "src/SocialiteAuth.php"
+    ]
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "suggest": {
+    "kodhe/socialite": "Provides the OAuth providers (Google, GitHub, Facebook, GitLab, LinkedIn, Twitter) consumed by kodhe/auth's SocialiteAuth bridge"
+  }
+}
