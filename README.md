@@ -92,7 +92,7 @@ only needs the entries you want to override.
 ```php
 <?php
 
-use Kodhe\Framework\Auth\Facade as Auth;
+use Kodhe\Framework\Auth\Support\Facade as Auth;
 
 if (Auth::attempt($email, $plainPassword, remember: true, extra: ['is_active' => 1])) {
     redirect('dashboard');
@@ -187,7 +187,7 @@ Auth::verifyEmail($e, $v);                     // handler; auth()->isVerified() 
 
 ### Helper and facade
 
-The global `auth()` helper and `Kodhe\Framework\Auth\Facade` share one
+The global `auth()` helper and `Kodhe\Framework\Auth\Support\Facade` share one
 singleton guard instance:
 
 ```php

@@ -33,7 +33,7 @@ use Kodhe\Framework\Auth\Contracts\AuthorizableProviderInterface;
 use Kodhe\Framework\Auth\Contracts\RegisterableProviderInterface;
 use Kodhe\Framework\Auth\Contracts\UpdatableProviderInterface;
 use Kodhe\Framework\Auth\Contracts\UserProviderInterface;
-use Kodhe\Framework\Auth\Facade;
+use Kodhe\Framework\Auth\Support\Facade;
 use Kodhe\Framework\Auth\GroupTree;
 use Kodhe\Framework\Auth\RoleHierarchy;
 
