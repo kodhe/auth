@@ -20,6 +20,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "suggest": {
+    "psr/event-dispatcher": "Required by the Bridge\\\\PsrAuthEventDispatcher adapter that forwards AuthEvents to any PSR-14 dispatcher (e.g. kodhe/events)",
     "kodhe/socialite": "Provides the OAuth providers (Google, GitHub, Facebook, GitLab, LinkedIn, Twitter) consumed by kodhe/auth's SocialiteAuth bridge"
   }
 }

@@ -175,6 +175,18 @@ Implement `AuthEventDispatcherInterface` and pass it to
 (`LOGIN`, `FAILED`, `LOGOUT`, `PASSWORD_RESET_REQUESTED`, `VERIFIED`, …).
 Listener exceptions are swallowed so they can never break authentication.
 
+To plug the guard into any PSR-14 dispatcher (e.g. `kodhe/events`), use the
+bundled adapter in `src/Bridge/`:
+
+```php
+use Kodhe\Framework\Auth\Bridge\PsrAuthEventDispatcher;
+
+$auth->setEventDispatcher(new PsrAuthEventDispatcher($psr14Dispatcher));
+
+$psr14Dispatcher->on('auth.failed', fn ($e) => throttle($e->get('identity')));
+$psr14Dispatcher->on('auth.*', fn ($e) => audit($e->name(), $e->payload()));
+```
+
 ### Registration / reset / verification examples
 
 ```php

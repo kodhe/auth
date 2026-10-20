@@ -4,6 +4,27 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Auth;
 
+// Guarantee the case-insensitive app path helpers (app_config_file_in(),
+// app_config_folder(), ...) are available even when this package is loaded
+// without composer's autoload "files" section (manual includes, bundled
+// copies, etc.). Projects may store their config in application/Config/
+// (PascalCase), which a plain APPPATH.'config/' lookup cannot find on
+// case-sensitive filesystems (Linux) — that is what made Auth throw
+// 'set "provider" in application/config/auth.php' even though the file
+// existed and defined a valid provider.
+if (!function_exists('app_config_file_in')) {
+    foreach ([
+        dirname(__DIR__, 2) . '/framework/src/Support/app_path.php',
+        dirname(__DIR__, 2) . '/../framework/src/Support/app_path.php',
+    ] as $__app_path_helper) {
+        if (is_file($__app_path_helper)) {
+            require_once $__app_path_helper;
+            break;
+        }
+    }
+}
+unset($__app_path_helper);
+
 use Kodhe\Framework\Auth\Contracts\AuthEventDispatcherInterface;
 use Kodhe\Framework\Auth\Contracts\AuthorizableProviderInterface;
 use Kodhe\Framework\Auth\Contracts\RegisterableProviderInterface;
@@ -1267,13 +1288,29 @@ class Auth implements AuthInterface
     }
 
     /**
-     * Load application/config/auth.php if present (returns an array).
+     * Load the application's auth.php config file if present.
+     *
+     * The config folder is resolved case-insensitively so projects that
+     * store their configuration in application/Config/ (Kodhe style) work
+     * on case-sensitive filesystems just like plain CI3 projects with
+     * application/config/. Without this, the guard silently fell back to
+     * the default config ('provider' => null) and threw
+     * 'Auth: set "provider" in application/config/auth.php ...'.
      */
     protected static function readAppConfig(): array
     {
-        if (defined('APPPATH')) {
-            foreach (['auth.php', 'Auth.php'] as $file) {
-                $path = APPPATH . 'config/' . $file;
+        if (!defined('APPPATH')) {
+            return [];
+        }
+
+        // Candidate relative paths inside the config folder, most specific
+        // first: the exact spelling, then PascalCase/snake_case variants.
+        $candidates = ['auth.php', 'Auth.php'];
+
+        // Preferred resolution: case-insensitive walk of the real folder.
+        if (function_exists('app_config_file_in')) {
+            foreach ($candidates as $file) {
+                $path = app_config_file_in(APPPATH, $file);
                 if (is_file($path)) {
                     $cfg = require $path;
                     if (is_array($cfg)) {
@@ -1282,6 +1319,34 @@ class Auth implements AuthInterface
                 }
             }
         }
+
+        // Fallback for environments where the app_path helpers are not
+        // available: try the literal lowercase path plus a manual scan of
+        // any differently-cased "config" folder under APPPATH.
+        $folders = ['config', 'Config', 'CONFIG'];
+        if (is_dir(APPPATH)) {
+            foreach ((scandir(APPPATH) ?: []) as $entry) {
+                if ($entry !== '.' && $entry !== '..'
+                    && strcasecmp($entry, 'config') === 0
+                    && is_dir(APPPATH . $entry)
+                    && !in_array($entry, $folders, true)) {
+                    $folders[] = $entry;
+                }
+            }
+        }
+
+        foreach ($folders as $folder) {
+            foreach ($candidates as $file) {
+                $path = APPPATH . $folder . DIRECTORY_SEPARATOR . $file;
+                if (is_file($path)) {
+                    $cfg = require $path;
+                    if (is_array($cfg)) {
+                        return $cfg;
+                    }
+                }
+            }
+        }
+
         return [];
     }
 
